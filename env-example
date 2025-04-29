@@ -1,0 +1,10 @@
+# Backend
+
+BACKEND_DEBUG=True
+BACKEND_PORT=5005
+
+# Database
+
+DATABASE_NAME=admanager
+DATABASE_USERNAME=admanager
+DATABASE_PASSWORD=admanager

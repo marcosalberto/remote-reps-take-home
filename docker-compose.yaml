@@ -1,0 +1,73 @@
+services:
+    backend:
+        restart: always 
+        build:
+            context: ./backend
+        environment: 
+            DEBUG: ${BACKEND_DEBUG:-False}
+            DATABASE_ENGINE: ${DATABASE_ENGINE}
+            DATABASE_NAME: ${DATABASE_NAME}
+            DATABASE_USERNAME: ${DATABASE_USERNAME}
+            DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+            DATABASE_HOST: ${DATABASE_HOST}
+            DATABASE_PORT: ${DATABASE_PORT}
+            CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+            DEFAULT_HOURLY_RATE: ${BACKEND_DEFAULT_HOURLY_RATE}
+        depends_on:
+            - database
+        ports:
+            - "8000:8000"
+        volumes:
+            - "./backend:/app"
+    celery:
+        restart: always 
+        build:
+            context: ./backend
+        environment: 
+            DATABASE_ENGINE: ${DATABASE_ENGINE}
+            DATABASE_NAME: ${DATABASE_NAME}
+            DATABASE_USERNAME: ${DATABASE_USERNAME}
+            DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+            DATABASE_HOST: ${DATABASE_HOST}
+            DATABASE_PORT: ${DATABASE_PORT}
+            CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+        depends_on:
+            - backend
+            - database
+            - redis
+        command: "celery -A admanager worker -B -l info"
+        volumes:
+            - "./backend:/app"
+    flower:
+        restart: always 
+        build:
+            context: ./backend
+        environment: 
+            CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+        depends_on:
+            - celery
+        ports:
+            - 5555:5555
+        command: "celery -A admanager flower --address=0.0.0.0"
+        volumes:
+            - "./backend:/app"
+    redis:
+        image: 'redis:alpine'
+        hostname: redis
+        ports:
+        - 6379:6379
+    database:
+        image: postgres:17
+        environment:
+            POSTGRES_DB: ${DATABASE_NAME:-admanager}
+            POSTGRES_USER: ${DATABASE_USERNAME:-admanager}
+            POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-admanager}
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        env_file:
+            - .env
+
+volumes:
+    postgres_data:

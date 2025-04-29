@@ -1,0 +1,9 @@
+asgiref==3.8.1
+Django==5.1.4
+sqlparse==0.5.3
+psycopg2-binary==2.9.10
+djangorestframework==3.16.0
+redis==5.2.1
+celery==5.5.1
+flower==2.0.1
+freezegun==1.5.1
